@@ -357,7 +357,53 @@ class TemplateProcessor
 
         return $xmlBlock;
     }
+    /**
+     * Клонирование блока в таблице.
+     *
+     * @param string $blockname
+     * @param int $clones
+     * @param bool $replace
+     *
+     * @return string|null
+     */
+    public function cloneBlockTable($blockname, $clones = 1, $replace = true)
+    {
+        $xmlBlock = null;
 
+
+
+        preg_match('/(\<\?xml .*?\>)(\<w\:t>\$\{'.$blockname.'\}\<\/w\:t\>.*?\<\/w\:tr\>)(.*\<w\:t>\$\{\/'.$blockname.'\}\<\/w\:t\>.*?\<\/w\:tr\>)(.*)/s',
+            $this->tempDocumentMainPart,
+            $matches
+        );
+
+        if (isset($matches[3])) {
+            $xmlBlock = $matches[3];
+            $xmlBlock = str_replace(
+                '${/'.$blockname.'}',
+                '',
+                $xmlBlock
+            );
+            $cloned = array();
+            for ($i = 1; $i <= $clones; $i++) {
+                $cloned[] = $xmlBlock;
+            }
+            if ($replace) {
+                $this->tempDocumentMainPart = str_replace(
+                    '${'.$blockname.'}',
+                    '',
+                    $this->tempDocumentMainPart
+                );
+                $this->tempDocumentMainPart = str_replace(
+                    $matches[3],
+                    implode('', $cloned),
+                    $this->tempDocumentMainPart
+                );
+            }
+        }
+
+        return $xmlBlock;
+    }
     /**
      * Replace a block.
      *
